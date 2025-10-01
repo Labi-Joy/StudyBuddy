@@ -1,15 +1,10 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,4 +18,24 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Fix input text color - make text visible when typing */
+input,
+textarea,
+select {
+  color: #111827 !important; /* Dark gray/black text */
+  background-color: white;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af !important; /* Light gray for placeholders */
+}
+
+/* Ensure text stays dark when focused */
+input:focus,
+textarea:focus,
+select:focus {
+  color: #111827 !important;
 }
