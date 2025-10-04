@@ -20,6 +20,9 @@ async function uploadBufferToCloudinary(buffer, filename, folder) {
     );
     streamifier.createReadStream(buffer).pipe(uploadStream);
   });
+<<<<<<< HEAD
 }
 
 module.exports = { uploadBufferToCloudinary };
+=======
+>>>>>>> ec271927309391f889f199ae25b197eb4e828758

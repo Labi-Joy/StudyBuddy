@@ -16,6 +16,10 @@ async function getQuestions(subject, count = 5, year = new Date().getFullYear())
     console.warn('WAEC service error:', err?.message || err);
     return [];
   }
+<<<<<<< HEAD
 }
 
 module.exports = { getQuestions };
+=======
+};
+>>>>>>> ec271927309391f889f199ae25b197eb4e828758

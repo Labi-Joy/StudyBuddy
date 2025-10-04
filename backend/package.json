@@ -13,7 +13,10 @@
   "description": "",
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.3.0",
+<<<<<<< HEAD
     "@google/genai": "^1.22.0",
+=======
+>>>>>>> ec271927309391f889f199ae25b197eb4e828758
     "aws-sdk": "^2.1692.0",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
@@ -33,8 +36,12 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pdf-parse": "^1.1.1",
+<<<<<<< HEAD
     "streamifier": "^0.1.1",
     "tesseract.js": "^6.0.1"
+=======
+    "streamifier": "^0.1.1"
+>>>>>>> ec271927309391f889f199ae25b197eb4e828758
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
