@@ -1,43 +1,44 @@
-const textToSpeech = require('@google-cloud/text-to-speech');
-const cloudinary = require('cloudinary').v2;
-const streamifier = require('streamifier');
+require("dotenv").config();
+const textToSpeech = require("@google-cloud/text-to-speech");
+const fs = require("fs");
+const util = require("util");
+const path = require("path");
+const fileService = require("./fileServices");
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || '',
-  api_key: process.env.CLOUDINARY_API_KEY || '',
-  api_secret: process.env.CLOUDINARY_API_SECRET || ''
+const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+
+const client = new textToSpeech.TextToSpeechClient({
+  credentials: {
+    client_email: serviceAccount.client_email,
+    private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),
+  },
 });
 
-const client = new textToSpeech.TextToSpeechClient();
-
-exports.synthesizeTextAndUpload = async (text, voice = 'en-US-Wavenet-D') => {
-  const request = {
-    input: { text: String(text).slice(0, 5000) }, // limit size for safety
-    voice: { languageCode: 'en-US', name: voice },
-    audioConfig: { audioEncoding: 'MP3' }
-  };
-
+exports.synthesizeTextAndUpload = async (text) => {
   try {
-    const [response] = await client.synthesizeSpeech(request);
-    const audioBuffer = response.audioContent;
+    const request = {
+      input: { text },
+      voice: { languageCode: "en-US", ssmlGender: "FEMALE" },
+      audioConfig: { audioEncoding: "MP3" },
+    };
 
-    // upload buffer to Cloudinary (resource_type 'video' supports audio)
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'tts',
-          resource_type: 'video',
-          public_id: `tts-${Date.now()}`
-        },
-        (err, result) => {
-          if (err) return reject(err);
-          resolve(result.secure_url);
-        }
-      );
-      streamifier.createReadStream(audioBuffer).pipe(uploadStream);
-    });
-  } catch (err) {
-    console.warn('TTS error:', err?.message || err);
-    return null;
-  }
+    const [response] = await client.synthesizeSpeech(request);
+
+    const tempDir = path.join(__dirname, "../temp");
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
+
+  
+    const tempFilePath = path.join(tempDir, `output-${Date.now()}.mp3`);
+    await util.promisify(fs.writeFile)(tempFilePath, response.audioContent, "binary");
+
+    const fileUrl = await fileService.uploadFileToCloudinary(tempFilePath, "tts-audios");
+
+    fs.unlinkSync(tempFilePath);
+
+    return fileUrl;
+  } catch (error) {
+  console.error(" GOOGLE TTS ERROR:", JSON.stringify(error, null, 2));
+  throw new Error("Failed to generate voice");
+}
+
 };
