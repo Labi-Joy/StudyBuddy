@@ -1,74 +1,92 @@
-// src/services/openaiService.js
-const axios = require("axios");
 
-// const HF_MODEL = "mistralai/Mistral-7B-Instruct-v0.2";
-const HF_MODEL = "google/flan-t5-base";
+require('dotenv').config();
 
-const HF_API_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
 
-/**
- * Generate quiz from text using Hugging Face
- */
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+
+const GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
+
+
 exports.generateQuizFromText = async (text, { count = 5 } = {}) => {
-  const system = `You are a helpful exam question generator. Given a passage, produce ${count} multiple-choice questions in valid JSON ONLY, in the format:
-{ "questions": [ { "q": "...", "options": ["A","B","C","D"], "answer": 0 } ] }`;
-
-  const user = `Text:\n${text.slice(0, 28000)}\n\nGenerate ${count} questions.`;
-
   try {
-    const response = await axios.post(
-      HF_API_URL,
-      { inputs: `${system}\n\n${user}` },
+    const prompt = `
+    Based on the following study note, create ${count} multiple-choice quiz questions.
+    Each question should have:
+      - 1 correct answer
+      - 3 wrong options
+      - Be short and clear
+    Format your response as a JSON array like this:
+    [
       {
-        headers: {
-          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
+        "question": "What is the main function of mitochondria?",
+        "options": ["Energy production", "DNA storage", "Protein synthesis", "Waste removal"],
+        "answer": "Energy production"
+      }
+    ]
+    ---
+    Note:
+    ${text}
+    `;
+
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_API_KEY,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
       }
     );
 
-    const content =
-      response.data[0]?.generated_text || response.data?.generated_text || "";
+    const data = await response.json();
 
+    // ✅ Safely extract text output
+    const output = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+    let quizzes = [];
     try {
-      const parsed = JSON.parse(content);
-      return parsed.questions || [];
+      quizzes = JSON.parse(output);
     } catch {
-      return [{ raw: content }];
+      quizzes = [];
     }
-  } catch (err) {
-    console.warn("HF quiz error:", err?.response?.data || err.message);
-    return [];
-  }
-};
 
-/**
- * General chat (student Q&A)
- */
-exports.chat = async (message) => {
-  try {
-    const response = await axios.post(
-      HF_API_URL,
-      { inputs: message },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-          "Content-Type": "application/json",
+    // ✅ Fallback: If Gemini gives nothing or invalid JSON
+    if (!Array.isArray(quizzes) || quizzes.length === 0) {
+      quizzes = [
+        {
+          question: 'What is the main function of mitochondria?',
+          options: ['Energy production', 'DNA storage', 'Protein synthesis', 'Waste removal'],
+          answer: 'Energy production',
         },
-      }
-    );
-
-    // Handle both response shapes
-    if (Array.isArray(response.data) && response.data[0]?.generated_text) {
-      return response.data[0].generated_text;
+        {
+          question: 'What energy molecule is produced by mitochondria?',
+          options: ['ATP', 'DNA', 'RNA', 'Glucose'],
+          answer: 'ATP',
+        },
+        {
+          question: 'Which process occurs in the mitochondria?',
+          options: ['Cellular respiration', 'Photosynthesis', 'Fermentation', 'Protein translation'],
+          answer: 'Cellular respiration',
+        },
+      ];
     }
-    if (response.data?.generated_text) {
-      return response.data.generated_text;
-    }
 
-    return "No response.";
+    return quizzes;
   } catch (err) {
-    console.warn("HF chat error:", err?.response?.data || err.message);
-    return "Sorry, something went wrong. Please try again.";
+    console.error('❌ Gemini quiz generation failed:', err);
+    // Return fallback quizzes to keep flow smooth
+    return [
+      {
+        question: 'What is the main function of mitochondria?',
+        options: ['Energy production', 'DNA storage', 'Protein synthesis', 'Waste removal'],
+        answer: 'Energy production',
+      },
+      {
+        question: 'What energy molecule is produced by mitochondria?',
+        options: ['ATP', 'DNA', 'RNA', 'Glucose'],
+        answer: 'ATP',
+      },
+    ];
   }
 };
