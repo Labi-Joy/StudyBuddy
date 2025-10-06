@@ -5,16 +5,29 @@ const util = require("util");
 const path = require("path");
 const fileService = require("./fileServices");
 
-const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
-
-const client = new textToSpeech.TextToSpeechClient({
-  credentials: {
-    client_email: serviceAccount.client_email,
-    private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),
-  },
-});
+// Initialize TTS client only if credentials are provided
+let client;
+if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+  try {
+    const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+    client = new textToSpeech.TextToSpeechClient({
+      credentials: {
+        client_email: serviceAccount.client_email,
+        private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),
+      },
+    });
+  } catch (error) {
+    console.warn('⚠️  Google TTS credentials not configured properly');
+  }
+} else {
+  console.warn('⚠️  Google TTS not configured (GOOGLE_SERVICE_ACCOUNT_JSON missing)');
+}
 
 exports.synthesizeTextAndUpload = async (text) => {
+  if (!client) {
+    throw new Error('Google TTS is not configured. Please set GOOGLE_SERVICE_ACCOUNT_JSON in environment variables.');
+  }
+
   try {
     const request = {
       input: { text },
