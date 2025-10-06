@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 
 interface User {
+  id: string;
   name: string;
   email: string;
+  isVerified: boolean;
 }
 
 interface Quiz {
@@ -52,8 +54,9 @@ interface StoreState {
   messages: Message[];
   
   // Actions
-  login: (user: User) => void;
+  login: (user: User, token: string) => void;
   logout: () => void;
+  initAuth: () => void;
   toggleChatbot: () => void;
   setChatbotOpen: (open: boolean) => void;
   addMessage: (message: Message) => void;
@@ -79,17 +82,39 @@ export const useStore = create<StoreState>((set) => ({
   messages: [],
   
   // Actions
-  login: (user) => set({ isAuthenticated: true, user }),
-  
-  logout: () => set({ 
-    isAuthenticated: false, 
-    user: null,
-    selectedDepartment: null,
-    selectedQuiz: null,
-    messages: [],
-    uploadedFile: null,
-    generatedQuiz: null,
-  }),
+  login: (user, token) => {
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    set({ isAuthenticated: true, user });
+  },
+
+  logout: () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    set({
+      isAuthenticated: false,
+      user: null,
+      selectedDepartment: null,
+      selectedQuiz: null,
+      messages: [],
+      uploadedFile: null,
+      generatedQuiz: null,
+    });
+  },
+
+  initAuth: () => {
+    const token = localStorage.getItem('authToken');
+    const userStr = localStorage.getItem('user');
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        set({ isAuthenticated: true, user });
+      } catch {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+      }
+    }
+  },
   
   toggleChatbot: () => set((state) => ({ chatbotOpen: !state.chatbotOpen })),
   

@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/store/useStore';
+import { authApi } from '@/lib/api';
 import Logo from '@/components/Logo';
 
 // Google Icon SVG
@@ -22,19 +23,32 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Mock login - replace with actual API call
-    login({ name: email.split('@')[0], email });
-    router.push('/dashboard/notes');
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await authApi.login({ email, password });
+      login({
+        id: response.user.id,
+        name: response.user.username,
+        email: response.user.email,
+        isVerified: response.user.isVerified
+      }, response.token);
+      router.push('/dashboard/notes');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Separate function for Google sign-in
   const handleGoogleSignIn = () => {
-    // Mock Google login - replace with actual Google OAuth
-    login({ name: 'Google User', email: 'user@gmail.com' });
-    router.push('/dashboard/notes');
+    authApi.googleAuth();
   };
 
   return (
@@ -47,6 +61,12 @@ export default function LoginPage() {
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           Welcome Back
         </h2>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -79,9 +99,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 
