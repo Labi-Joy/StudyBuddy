@@ -39,7 +39,7 @@ export default function LoginPage() {
         email: response.user.email,
         isVerified: response.user.isVerified
       }, response.token);
-      router.push('/dashboard/notes');
+      router.push('/dashboard');
     } catch (err) {
       setError((err as any).response?.data?.message || 'Login failed');
     } finally {

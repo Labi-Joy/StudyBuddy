@@ -24,6 +24,11 @@ export interface UploadNoteResponse {
 }
 
 export const notesApi = {
+  getUserNotes: async () => {
+    const response = await apiClient.get<{ notes: Note[] }>('/notes');
+    return response.data;
+  },
+
   uploadText: async (text: string) => {
     const response = await apiClient.post<UploadNoteResponse>('/notes/upload-text', { text });
     return response.data;

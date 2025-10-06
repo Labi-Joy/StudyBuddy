@@ -34,18 +34,22 @@ export default function RegisterPage() {
 
     try {
       await authApi.signup({ username: name, email, password });
-      // Comment out OTP verification - go directly to dashboard
-      // setSuccess('Account created! Check your email for OTP verification.');
-      // setShowOtpInput(true);
 
-      // Mock login without OTP for testing
-      login({
-        id: 'temp-id',
-        name: name,
-        email: email,
-        isVerified: false
-      }, 'temp-token');
-      router.push('/dashboard/notes');
+      // Auto-login after successful registration
+      try {
+        const loginResponse = await authApi.login({ email, password });
+        login({
+          id: loginResponse.user.id,
+          name: loginResponse.user.username,
+          email: loginResponse.user.email,
+          isVerified: loginResponse.user.isVerified
+        }, loginResponse.token);
+        router.push('/dashboard');
+      } catch (loginErr) {
+        // If auto-login fails, show success message and redirect to login
+        setError('Account created! Please login to continue.');
+        setTimeout(() => router.push('/login'), 2000);
+      }
     } catch (err) {
       setError((err as any).response?.data?.message || 'Registration failed');
     } finally {

@@ -2,7 +2,7 @@
 
 import { useState, ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckSquare, MessageCircle, Menu, LogOut, User } from 'lucide-react';
+import { CheckSquare, MessageCircle, Menu, LogOut, User, Home, Mic, Library } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import ChatbotWidget from '@/components/chatbot/ChatbotWidget';
 import Logo from '@/components/Logo';
@@ -58,13 +58,29 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         <nav className="flex-1 p-4 space-y-2">
           <button
+            onClick={() => router.push('/dashboard')}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-green-700 transition"
+          >
+            <Home className="w-5 h-5" />
+            {sidebarOpen && <span>Home</span>}
+          </button>
+
+          <button
+            onClick={() => router.push('/dashboard/my-notes')}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-green-700 transition"
+          >
+            <Library className="w-5 h-5" />
+            {sidebarOpen && <span>My Notes</span>}
+          </button>
+
+          <button
             onClick={() => router.push('/dashboard/notes')}
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-green-700 transition"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
             </svg>
-            {sidebarOpen && <span>Notes to Quiz</span>}
+            {sidebarOpen && <span>Upload Notes</span>}
           </button>
 
           <button
@@ -73,6 +89,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           >
             <CheckSquare className="w-5 h-5" />
             {sidebarOpen && <span>WAEC Quizzes</span>}
+          </button>
+
+          <button
+            onClick={() => router.push('/dashboard/voice')}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-green-700 transition"
+          >
+            <Mic className="w-5 h-5" />
+            {sidebarOpen && <span>Text-to-Speech</span>}
           </button>
 
           <button

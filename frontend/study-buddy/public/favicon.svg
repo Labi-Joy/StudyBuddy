@@ -1,0 +1,11 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="16" cy="16" r="16" fill="#10B981"/>
+
+  <!-- Book Icon -->
+  <path d="M9 8C9 7.44772 9.44772 7 10 7H14C14.5523 7 15 7.44772 15 8V24C15 24.5523 14.5523 25 14 25H10C9.44772 25 9 24.5523 9 24V8Z" fill="white"/>
+  <path d="M17 8C17 7.44772 17.4477 7 18 7H22C22.5523 7 23 7.44772 23 8V24C23 24.5523 22.5523 25 22 25H18C17.4477 25 17 24.5523 17 24V8Z" fill="white"/>
+
+  <!-- Bookmark/Ribbon -->
+  <path d="M16 20L13 23V13L16 16L19 13V23L16 20Z" fill="#3B82F6"/>
+</svg>
