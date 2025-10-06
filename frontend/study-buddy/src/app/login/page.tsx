@@ -40,8 +40,8 @@ export default function LoginPage() {
         isVerified: response.user.isVerified
       }, response.token);
       router.push('/dashboard/notes');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed');
+    } catch (err) {
+      setError((err as any).response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
     }

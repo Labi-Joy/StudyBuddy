@@ -22,7 +22,7 @@ export default function ChatbotWidget() {
       const response = await chatApi.sendMessage(input);
       const botMessage = { id: Date.now() + 1, text: response.reply, sender: 'bot' as const };
       addMessage(botMessage);
-    } catch (err: any) {
+    } catch {
       const errorMessage = {
         id: Date.now() + 1,
         text: 'Sorry, I encountered an error. Please try again.',

@@ -26,43 +26,28 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [showOtpInput, setShowOtpInput] = useState(false);
-  const [otp, setOtp] = useState('');
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setSuccess('');
 
     try {
       await authApi.signup({ username: name, email, password });
-      setSuccess('Account created! Check your email for OTP verification.');
-      setShowOtpInput(true);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+      // Comment out OTP verification - go directly to dashboard
+      // setSuccess('Account created! Check your email for OTP verification.');
+      // setShowOtpInput(true);
 
-  const handleOtpVerify = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await authApi.verifyOtp({ email, otp });
+      // Mock login without OTP for testing
       login({
-        id: response.user.id,
-        name: response.user.username,
-        email: response.user.email,
-        isVerified: response.user.isVerified
-      }, response.token);
+        id: 'temp-id',
+        name: name,
+        email: email,
+        isVerified: false
+      }, 'temp-token');
       router.push('/dashboard/notes');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'OTP verification failed');
+    } catch (err) {
+      setError((err as any).response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -80,7 +65,7 @@ export default function RegisterPage() {
         </div>
 
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          {showOtpInput ? 'Verify Your Email' : 'Create Account'}
+          Create Account
         </h2>
 
         {error && (
@@ -89,38 +74,7 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
-            {success}
-          </div>
-        )}
-
-        {showOtpInput ? (
-          <form onSubmit={handleOtpVerify} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Enter OTP
-              </label>
-              <input
-                type="text"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter 6-digit OTP"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Verifying...' : 'Verify OTP'}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Full Name
@@ -171,9 +125,7 @@ export default function RegisterPage() {
             {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
-        )}
 
-        {!showOtpInput && (
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -192,7 +144,6 @@ export default function RegisterPage() {
             <span>Google</span>
           </button>
         </div>
-        )}
 
         <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{' '}

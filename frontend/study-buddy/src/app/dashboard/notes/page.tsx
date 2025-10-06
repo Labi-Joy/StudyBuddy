@@ -44,8 +44,8 @@ export default function NotesPage() {
         title: response.note.title,
         questions: transformedQuestions,
       });
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to generate quiz');
+    } catch (err) {
+      setError((err as any).response?.data?.message || 'Failed to generate quiz');
     } finally {
       setUploading(false);
     }
