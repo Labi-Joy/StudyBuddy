@@ -40,8 +40,17 @@ export default function LoginPage() {
         isVerified: response.user.isVerified
       }, response.token);
       router.push('/dashboard');
-    } catch (err) {
-      setError((err as any).response?.data?.message || 'Login failed');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string; name?: string };
+
+      // Handle specific error types
+      if (error.name === 'ServerStarting') {
+        setError('Server is waking up. Please wait 30 seconds and try again.');
+      } else if (error.name === 'NetworkError') {
+        setError('Cannot connect to server. Please check your internet connection.');
+      } else {
+        setError(error.response?.data?.message || error.message || 'Login failed');
+      }
     } finally {
       setLoading(false);
     }

@@ -50,8 +50,9 @@ export default function RegisterPage() {
         setError('Account created! Please login to continue.');
         setTimeout(() => router.push('/login'), 2000);
       }
-    } catch (err) {
-      setError((err as any).response?.data?.message || 'Registration failed');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(error.response?.data?.message || error.message || 'Registration failed');
     } finally {
       setLoading(false);
     }

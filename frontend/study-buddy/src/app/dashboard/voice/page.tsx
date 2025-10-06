@@ -22,8 +22,9 @@ export default function VoicePage() {
     try {
       const response = await voiceApi.textToVoice(text);
       setAudioUrl(response.ttsUrl);
-    } catch (err) {
-      setError((err as any).response?.data?.message || 'Failed to generate audio');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(error.response?.data?.message || error.message || 'Failed to generate audio');
     } finally {
       setLoading(false);
     }
@@ -39,8 +40,9 @@ export default function VoicePage() {
     try {
       const response = await voiceApi.imageToVoice(image);
       setAudioUrl(response.ttsUrl);
-    } catch (err) {
-      setError((err as any).response?.data?.message || 'Failed to generate audio from image');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(error.response?.data?.message || error.message || 'Failed to generate audio from image');
     } finally {
       setLoading(false);
     }

@@ -19,6 +19,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 
+// Health check endpoint (for monitoring/keeping server alive)
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'StudyBuddy API',
+    version: '1.0.0',
+    endpoints: ['/api/auth', '/api/notes', '/api/quiz', '/api/auth/chat', '/api/auth/voice']
+  });
+});
+
 // Routes
 app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/notes', require('./src/routes/notes'));

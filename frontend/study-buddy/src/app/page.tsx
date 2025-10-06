@@ -237,7 +237,7 @@ export default function LandingPage() {
                 <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
               </div>
               <p className="text-gray-600 mb-4">
-                "Study Buddy helped me improve my grades by 40%! The AI-generated quizzes are spot on."
+                &ldquo;Study Buddy helped me improve my grades by 40%! The AI-generated quizzes are spot on.&rdquo;
               </p>
               <div className="font-semibold text-gray-800">- Chinedu O., SS3 Student</div>
             </div>
@@ -251,7 +251,7 @@ export default function LandingPage() {
                 <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
               </div>
               <p className="text-gray-600 mb-4">
-                "The text-to-speech feature is a game changer! I can now study while commuting."
+                &ldquo;The text-to-speech feature is a game changer! I can now study while commuting.&rdquo;
               </p>
               <div className="font-semibold text-gray-800">- Amina K., WAEC Candidate</div>
             </div>
@@ -265,7 +265,7 @@ export default function LandingPage() {
                 <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
               </div>
               <p className="text-gray-600 mb-4">
-                "Best study tool ever! The AI chatbot explains concepts better than my teacher."
+                &ldquo;Best study tool ever! The AI chatbot explains concepts better than my teacher.&rdquo;
               </p>
               <div className="font-semibold text-gray-800">- David E., Science Student</div>
             </div>
