@@ -39,7 +39,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <aside
         className={`${
           sidebarOpen ? 'w-64' : 'w-20'
-        } bg-green-800 text-white transition-all duration-300 flex flex-col`}
+        } bg-green-500 text-white transition-all duration-300 flex flex-col`}
       >
         <div className="p-4 flex items-center justify-between border-b border-green-700">
           {sidebarOpen && (
@@ -50,7 +50,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           )}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-white hover:bg-green-700 p-2 rounded"
+            className="text-white hover:bg-green-600 p-2 rounded"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -98,7 +98,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
-        <header className="bg-blue-900 text-white p-4 shadow-md">
+        <header className="bg-blue-500 text-white p-4 shadow-md">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold">Study Buddy Dashboard</h1>
             <div className="flex items-center space-x-3">
