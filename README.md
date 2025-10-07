@@ -60,7 +60,7 @@ Study-Buddy is an **AI-powered WAEC preparation tool** that helps Nigerian secon
 ---
 
 
-#### 🎯 Target audience
+#### 🎯 Target audience:
 
 1. secondary schools: to integrate our app into their school learning system
 2. individuals preparing for waec
