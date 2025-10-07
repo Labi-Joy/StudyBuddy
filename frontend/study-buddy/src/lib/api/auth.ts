@@ -28,8 +28,18 @@ export interface AuthResponse {
 
 export const authApi = {
   signup: async (data: SignupData) => {
-    const response = await apiClient.post<{ message: string }>('/auth/signup', data);
-    return response.data;
+    // Prefer /auth/signup; fallback to /auth/register on 404
+    try {
+      const response = await apiClient.post<AuthResponse>('/auth/signup', data);
+      return response.data as any;
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 404) {
+        const response = await apiClient.post<AuthResponse>('/auth/register', data);
+        return response.data as any;
+      }
+      throw err;
+    }
   },
 
   login: async (data: LoginData) => {
@@ -43,6 +53,6 @@ export const authApi = {
   },
 
   googleAuth: () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/auth/google`;
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'https://backend-studybuddy.onrender.com/api'}/auth/google`;
   },
 };

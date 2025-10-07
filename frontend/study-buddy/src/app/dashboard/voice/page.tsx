@@ -14,17 +14,20 @@ export default function VoicePage() {
 
   const handleTextToVoice = async () => {
     if (!text.trim()) return;
-
     setLoading(true);
     setError('');
     setAudioUrl('');
 
     try {
-      const response = await voiceApi.textToVoice(text);
-      setAudioUrl(response.ttsUrl);
+      // Use browser Speech Synthesis API for immediate TTS fallback
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      speechSynthesis.speak(utterance);
+      // Create a placeholder note to indicate playback (no downloadable URL via Web Speech API)
+      setAudioUrl('');
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } }; message?: string };
-      setError(error.response?.data?.message || error.message || 'Failed to generate audio');
+      const error = err as { message?: string };
+      setError(error.message || 'Failed to speak text');
     } finally {
       setLoading(false);
     }

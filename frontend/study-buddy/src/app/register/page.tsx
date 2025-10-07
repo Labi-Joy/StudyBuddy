@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/store/useStore';
 import { authApi } from '@/lib/api';
+import { wakeUpServer } from '@/lib/api/health';
 import Logo from '@/components/Logo';
 
 // Google Icon SVG
@@ -26,6 +27,28 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  const attemptSignup = async () => {
+    const maxAttempts = 3;
+    const delays = [3000, 6000, 12000];
+    for (let i = 0; i < maxAttempts; i++) {
+      try {
+        const response = await authApi.signup({ username: name, email, password });
+        return response;
+      } catch (err: any) {
+        const serverStarting = err?.name === 'ServerStarting' || err?.message?.toLowerCase?.().includes('waking');
+        const netErr = err?.name === 'NetworkError';
+        if (i < maxAttempts - 1 && (serverStarting || netErr)) {
+          setError('Server is waking up. Retrying...');
+          await sleep(delays[i]);
+          continue;
+        }
+        throw err;
+      }
+    }
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -60,15 +83,76 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await authApi.signup({ username: name, email, password });
-      
-      // Redirect to verification page
-      setError(''); // Clear any previous errors
-      router.push('/verify');
-      
+      // Wake server first to avoid long signup timeouts
+      await wakeUpServer();
+
+      const emailNormalized = email.trim().toLowerCase();
+      const response = await (async () => {
+        try {
+          return await authApi.signup({ username: name, email: emailNormalized, password });
+        } catch (e: any) {
+          const status = e?.response?.status;
+          const raw = e?.response?.data;
+          const msg = (raw?.message || raw?.error || '').toString().toLowerCase();
+          // Treat 400 with any message containing 'exist' as an exists case
+          if (status === 400 && msg.includes('exist')) {
+            return null as any; // trigger login fallback
+          }
+          // If body is a string HTML (e.g., cannot POST), try alternate path via retries
+          if (status === 404) {
+            return await attemptSignup();
+          }
+          // Network/cold start retry
+          const serverStarting = e?.name === 'ServerStarting' || e?.message?.toLowerCase?.().includes('waking');
+          const netErr = e?.name === 'NetworkError';
+          if (serverStarting || netErr) {
+            return await attemptSignup();
+          }
+          throw e;
+        }
+      })();
+
+      if (response?.token && response?.user) {
+        login({
+          id: response.user.id,
+          name: response.user.username,
+          email: response.user.email,
+          isVerified: response.user.isVerified
+        }, response.token);
+        router.push('/dashboard');
+      } else {
+        // Some backends return only message → fallback to login
+        try {
+          const loginResponse = await authApi.login({ email: emailNormalized, password });
+          login({
+            id: loginResponse.user.id,
+            name: loginResponse.user.username,
+            email: loginResponse.user.email,
+            isVerified: loginResponse.user.isVerified
+          }, loginResponse.token);
+          router.push('/dashboard');
+        } catch (loginErr: any) {
+          // If login fails, redirect to verify/ login with clear message
+          const msg = loginErr?.response?.data?.message || loginErr?.message || '';
+          if (String(msg).toLowerCase().includes('verify')) {
+            setError('Account created. Please verify your email. Redirecting to verification...');
+            setTimeout(() => router.push('/verify'), 1200);
+          } else {
+            setError('Account exists but login failed. Please try signing in.');
+            setTimeout(() => router.push('/login'), 1200);
+          }
+        }
+      }
+
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } }; message?: string };
-      setError(error.response?.data?.message || error.message || 'Registration failed. Please try again.');
+      const error = err as { response?: { data?: { message?: string } }; message?: string; name?: string };
+      if ((error as any).name === 'ServerStarting') {
+        setError('Server is waking up. Please wait a bit and try again.');
+      } else if ((error as any).name === 'NetworkError') {
+        setError('Cannot connect to server. Please try again shortly.');
+      } else {
+        setError(error.response?.data?.message || error.message || 'Registration failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { QuizQuestion } from '@/lib/mockData';
 
@@ -16,6 +16,7 @@ export default function QuizTaking({ quiz, onBack }: QuizTakingProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
+  const [showReview, setShowReview] = useState(false);
 
   const handleAnswer = (questionId: number, answerIndex: number) => {
     setSelectedAnswers({ ...selectedAnswers, [questionId]: answerIndex });
@@ -39,24 +40,88 @@ export default function QuizTaking({ quiz, onBack }: QuizTakingProps) {
     return correct;
   };
 
+  const reviewData = useMemo(() => {
+    return quiz.questions.map((q) => {
+      const userIdx = selectedAnswers[q.id];
+      const correctIdx = q.correctAnswer;
+      return {
+        id: q.id,
+        question: q.question,
+        options: q.options,
+        userIndex: userIdx,
+        correctIndex: correctIdx,
+        isCorrect: userIdx === correctIdx,
+      };
+    });
+  }, [quiz.questions, selectedAnswers]);
+
   if (showResults) {
     const score = calculateScore();
     const percentage = Math.round((score / quiz.questions.length) * 100);
+    const passed = percentage >= 50;
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-          <div className="text-6xl mb-4">🎉</div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Quiz Complete!</h2>
-          <div className="text-5xl font-bold text-blue-600 mb-6">{percentage}%</div>
-          <p className="text-xl text-gray-600 mb-8">
-            You got {score} out of {quiz.questions.length} questions correct
-          </p>
-          <button
-            onClick={onBack}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold"
-          >
-            Back to Quizzes
-          </button>
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="mb-4 text-center text-sm text-gray-600">{quiz.title}</div>
+          <div className="text-center mb-6">
+            <div className="text-6xl mb-4">{passed ? '🎉' : '📘'}</div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">{passed ? 'Great job!' : 'Keep practicing!'}</h2>
+            <div className={`text-5xl font-bold ${passed ? 'text-green-600' : 'text-red-600'} mb-2`}>{percentage}%</div>
+            <p className="text-xl text-gray-600">
+              You got {score} of {quiz.questions.length} correct
+            </p>
+          </div>
+
+          {!showReview && (
+            <div className="flex flex-wrap gap-3 justify-center">
+              <button
+                onClick={() => setShowReview(true)}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold"
+              >
+                Review Answers
+              </button>
+              <button
+                onClick={onBack}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold"
+              >
+                Back to Quizzes
+              </button>
+            </div>
+          )}
+
+          {showReview && (
+            <div className="mt-8 space-y-6">
+              <div className="text-center text-sm text-gray-600">{quiz.title}</div>
+              {reviewData.map((r, idx) => (
+                <div key={r.id} className="border rounded-lg p-4">
+                  <div className="font-semibold mb-2">Q{idx + 1}. {r.question}</div>
+                  <div className="space-y-2">
+                    {r.options.map((opt, i) => {
+                      const isUser = r.userIndex === i;
+                      const isCorrect = r.correctIndex === i;
+                      return (
+                        <div key={i} className={`p-3 rounded border ${isCorrect ? 'border-green-500 bg-green-50' : isUser ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
+                          <span className="font-medium mr-2">{String.fromCharCode(65 + i)}.</span>
+                          {opt}
+                          {isCorrect && <span className="ml-2 text-green-700">(Correct)</span>}
+                          {isUser && !isCorrect && <span className="ml-2 text-red-700">(Your answer)</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              <div className="flex justify-center">
+                <button
+                  onClick={onBack}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold"
+                >
+                  Back to Quizzes
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -74,8 +139,9 @@ export default function QuizTaking({ quiz, onBack }: QuizTakingProps) {
           <ArrowLeft className="w-4 h-4" />
           <span>Exit Quiz</span>
         </button>
-        <div className="text-gray-600 font-medium">
-          Question {currentQuestion + 1} of {quiz.questions.length}
+        <div className="text-right">
+          <div className="text-gray-800 font-semibold">{quiz.title}</div>
+          <div className="text-gray-600 font-medium">Question {currentQuestion + 1} of {quiz.questions.length}</div>
         </div>
       </div>
 

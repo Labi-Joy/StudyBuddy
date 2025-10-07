@@ -43,23 +43,12 @@ export default function VerifyPage() {
     }
 
     try {
-      const response = await authApi.verifyOtp({ email, otp });
-      
-      // Auto-login after successful verification
-      try {
-        const loginResponse = await authApi.login({ email, password: '' });
-        login({
-          id: loginResponse.user.id,
-          name: loginResponse.user.username,
-          email: loginResponse.user.email,
-          isVerified: loginResponse.user.isVerified
-        }, loginResponse.token);
-        router.push('/dashboard');
-      } catch (loginErr) {
-        setSuccess(true);
-        setError('');
-        setTimeout(() => router.push('/login'), 2000);
-      }
+      const emailNormalized = email.trim().toLowerCase();
+      await authApi.verifyOtp({ email: emailNormalized, otp });
+      // Show success and redirect to login; do not attempt login without password
+      setSuccess(true);
+      setError('');
+      setTimeout(() => router.push('/login'), 1500);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } }; message?: string };
       setError(error.response?.data?.message || error.message || 'Verification failed. Please try again.');
