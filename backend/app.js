@@ -5,13 +5,15 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const passport = require('passport');
 const connectDB = require('./src/config/db');
+require('./src/config/passport');
 
-// Initialize passport Google strategy
 require('./src/config/passport');
 
 const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Middleware
+
 app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
@@ -49,14 +51,18 @@ app.use(require('./src/middlewares/errorHandler'));
 
 const PORT = process.env.PORT || 4000;
 
-// Connect DB and start server
+app.get('/', (req, res) => {
+  res.send('Welcome to Study Buddy backend url');
+});
+
+
 connectDB()
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`✅ Server listening on http://localhost:${PORT}`);
+      console.log(`Server listening on http://localhost:${PORT}`);
     });
   })
   .catch((err) => {
-    console.error('❌ Failed to start server', err);
+    console.error(' Failed to start server', err);
     process.exit(1);
   });
