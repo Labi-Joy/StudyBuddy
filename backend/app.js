@@ -7,6 +7,7 @@ const passport = require('passport');
 const connectDB = require('./src/config/db');
 require('./src/config/passport');
 
+<<<<<<< HEAD
 require('./src/config/passport');
 
 const app = express();
@@ -14,11 +15,38 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
+=======
+// Initialize passport Google strategy
+require('./src/config/passport');
+
+const app = express();
+
+// Middleware
+>>>>>>> 330b07488d76f7ccb1896bfc107dd8eb5b5d4819
 app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
+
+// Health check endpoint (for monitoring/keeping server alive)
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'StudyBuddy API',
+    version: '1.0.0',
+    endpoints: ['/api/auth', '/api/notes', '/api/quiz', '/api/auth/chat', '/api/auth/voice']
+  });
+});
 
 // Routes
 app.use('/api/auth', require('./src/routes/auth'));

@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/store/useStore';
+import { authApi } from '@/lib/api';
 import Logo from '@/components/Logo';
 
 // Google Icon SVG
@@ -23,19 +24,42 @@ export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Mock registration - replace with actual API call
-    login({ name, email });
-    router.push('/dashboard/notes');
+    setLoading(true);
+    setError('');
+
+    try {
+      await authApi.signup({ username: name, email, password });
+
+      // Auto-login after successful registration
+      try {
+        const loginResponse = await authApi.login({ email, password });
+        login({
+          id: loginResponse.user.id,
+          name: loginResponse.user.username,
+          email: loginResponse.user.email,
+          isVerified: loginResponse.user.isVerified
+        }, loginResponse.token);
+        router.push('/dashboard');
+      } catch (loginErr) {
+        // If auto-login fails, show success message and redirect to login
+        setError('Account created! Please login to continue.');
+        setTimeout(() => router.push('/login'), 2000);
+      }
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(error.response?.data?.message || error.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Separate function for Google sign-in
   const handleGoogleSignIn = () => {
-    // Mock Google registration - replace with actual Google OAuth
-    login({ name: 'Google User', email: 'user@gmail.com' });
-    router.push('/dashboard/notes');
+    authApi.googleAuth();
   };
 
   return (
@@ -48,6 +72,12 @@ export default function RegisterPage() {
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           Create Account
         </h2>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -94,9 +124,10 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create Account
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 

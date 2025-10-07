@@ -3,12 +3,13 @@
 import { useState, ChangeEvent } from 'react';
 import { Upload } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import { sampleQuizQuestions } from '@/lib/mockData';
+import { notesApi } from '@/lib/api';
 import QuizTaking from '@/components/dashboard/QuizTaking';
 
 export default function NotesPage() {
   const { uploadedFile, generatedQuiz, setUploadedFile, setGeneratedQuiz, clearGeneratedQuiz } = useStore();
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -21,18 +22,34 @@ export default function NotesPage() {
     }
   };
 
-  const handleGenerateQuiz = () => {
+  const handleGenerateQuiz = async () => {
     if (!uploadedFile) return;
-    
+
     setUploading(true);
-    // Simulate API call
-    setTimeout(() => {
+    setError('');
+
+    try {
+      const response = await notesApi.uploadFile(uploadedFile);
+
+      // Transform backend quiz format to frontend format
+      const transformedQuestions = response.note.quizzes.map((q, index) => ({
+        id: index + 1,
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.options.indexOf(q.answer),
+        explanation: q.explanation,
+      }));
+
       setGeneratedQuiz({
-        title: uploadedFile.name.replace(/\.[^/.]+$/, ''),
-        questions: sampleQuizQuestions,
+        title: response.note.title,
+        questions: transformedQuestions,
       });
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(error.response?.data?.message || error.message || 'Failed to generate quiz');
+    } finally {
       setUploading(false);
-    }, 2000);
+    }
   };
 
   if (generatedQuiz) {
@@ -46,6 +63,12 @@ export default function NotesPage() {
         <p className="text-gray-600 mb-6">
           Upload your notes (PDF, DOCX, TXT) and we&apos;ll generate a custom quiz for you
         </p>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
 
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-blue-500 transition">
           <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />

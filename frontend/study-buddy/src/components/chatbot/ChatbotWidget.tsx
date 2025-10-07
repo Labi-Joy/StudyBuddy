@@ -3,32 +3,35 @@
 import { useState, KeyboardEvent } from 'react';
 import { MessageCircle, X, Send } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import { mockChatbotResponses } from '@/lib/mockData';
+import { chatApi } from '@/lib/api';
 
 export default function ChatbotWidget() {
   const { chatbotOpen, messages, setChatbotOpen, addMessage } = useStore();
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || loading) return;
 
     const userMessage = { id: Date.now(), text: input, sender: 'user' as const };
     addMessage(userMessage);
-    
-    let botResponse = mockChatbotResponses.default;
-    const lowerInput = input.toLowerCase();
-    
-    if (lowerInput.includes('waec')) botResponse = mockChatbotResponses.waec;
-    else if (lowerInput.includes('quiz')) botResponse = mockChatbotResponses.quiz;
-    else if (lowerInput.includes('note')) botResponse = mockChatbotResponses.notes;
-    else if (lowerInput.includes('help')) botResponse = mockChatbotResponses.help;
-
-    setTimeout(() => {
-      const botMessage = { id: Date.now() + 1, text: botResponse, sender: 'bot' as const };
-      addMessage(botMessage);
-    }, 500);
-
     setInput('');
+    setLoading(true);
+
+    try {
+      const response = await chatApi.sendMessage(input);
+      const botMessage = { id: Date.now() + 1, text: response.reply, sender: 'bot' as const };
+      addMessage(botMessage);
+    } catch {
+      const errorMessage = {
+        id: Date.now() + 1,
+        text: 'Sorry, I encountered an error. Please try again.',
+        sender: 'bot' as const
+      };
+      addMessage(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -96,9 +99,14 @@ export default function ChatbotWidget() {
           />
           <button
             onClick={handleSend}
-            className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg"
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Send className="w-5 h-5" />
+            {loading ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
           </button>
         </div>
       </div>
