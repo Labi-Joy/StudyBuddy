@@ -8,9 +8,29 @@ exports.registerUser = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
 
+    // Input validation
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'Username, email, and password are required' });
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Please provide a valid email address' });
+    }
+
+    // Password validation
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    }
+
+    // Check if user already exists
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ message: 'User already exists' });
 
+    // Check if username already exists
+    user = await User.findOne({ username });
+    if (user) return res.status(400).json({ message: 'Username already taken' });
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = Date.now() + 10 * 60 * 1000;
@@ -23,17 +43,33 @@ exports.registerUser = async (req, res, next) => {
       verificationOtpExpires: otpExpires,
     });
 
-    await sendEmail({
-      to: email,
-      subject: 'Verify your email',
-      html: `<p>Hello ${username},</p>
-             <p>Your verification OTP is:</p>
-             <h2>${otp}</h2>
-             <p>This OTP will expire in 10 minutes.</p>`,
-    });
-
-    res.status(201).json({ message: 'User registered. Please check your email for the OTP.' });
+    // Try to send email, but don't fail registration if email fails
+    try {
+      await sendEmail({
+        to: email,
+        subject: 'Verify your email - StudyBuddy',
+        html: `<p>Hello ${username},</p>
+               <p>Welcome to StudyBuddy! Your verification OTP is:</p>
+               <h2 style="color: #2563eb; font-size: 24px; font-weight: bold;">${otp}</h2>
+               <p>This OTP will expire in 10 minutes.</p>
+               <p>If you didn't create this account, please ignore this email.</p>`,
+      });
+      
+      res.status(201).json({ 
+        message: 'User registered successfully. Please check your email for the verification OTP.',
+        success: true 
+      });
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Still return success but with a different message
+      res.status(201).json({ 
+        message: 'User registered successfully. Please contact support for email verification.',
+        success: true,
+        warning: 'Email verification could not be sent'
+      });
+    }
   } catch (err) {
+    console.error('Registration error:', err);
     next(err);
   }
 };

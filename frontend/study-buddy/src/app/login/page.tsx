@@ -48,6 +48,8 @@ export default function LoginPage() {
         setError('Server is waking up. Please wait 30 seconds and try again.');
       } else if (error.name === 'NetworkError') {
         setError('Cannot connect to server. Please check your internet connection.');
+      } else if ((error as any).response?.status === 403 && error.response?.data?.message?.includes('verify')) {
+        setError('Please verify your email before logging in. Check your email for the verification code.');
       } else {
         setError(error.response?.data?.message || error.message || 'Login failed');
       }
@@ -134,15 +136,26 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don&apos;t have an account?{' '}
-          <Link
-            href="/register"
-            className="text-blue-600 hover:text-blue-700 font-medium"
-          >
-            Sign Up
-          </Link>
-        </p>
+        <div className="mt-6 text-center space-y-2">
+          <p className="text-sm text-gray-600">
+            Don&apos;t have an account?{' '}
+            <Link
+              href="/register"
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Sign Up
+            </Link>
+          </p>
+          <p className="text-sm text-gray-600">
+            Need to verify your email?{' '}
+            <Link
+              href="/verify"
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Verify Email
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

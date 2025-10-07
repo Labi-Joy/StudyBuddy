@@ -32,27 +32,43 @@ export default function RegisterPage() {
     setLoading(true);
     setError('');
 
-    try {
-      await authApi.signup({ username: name, email, password });
+    // Basic client-side validation
+    if (!name.trim()) {
+      setError('Please enter your full name');
+      setLoading(false);
+      return;
+    }
 
-      // Auto-login after successful registration
-      try {
-        const loginResponse = await authApi.login({ email, password });
-        login({
-          id: loginResponse.user.id,
-          name: loginResponse.user.username,
-          email: loginResponse.user.email,
-          isVerified: loginResponse.user.isVerified
-        }, loginResponse.token);
-        router.push('/dashboard');
-      } catch (loginErr) {
-        // If auto-login fails, show success message and redirect to login
-        setError('Account created! Please login to continue.');
-        setTimeout(() => router.push('/login'), 2000);
-      }
+    if (!email.trim()) {
+      setError('Please enter your email address');
+      setLoading(false);
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authApi.signup({ username: name, email, password });
+      
+      // Redirect to verification page
+      setError(''); // Clear any previous errors
+      router.push('/verify');
+      
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } }; message?: string };
-      setError(error.response?.data?.message || error.message || 'Registration failed');
+      setError(error.response?.data?.message || error.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
