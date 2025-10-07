@@ -7,7 +7,6 @@ const passport = require('passport');
 const connectDB = require('./src/config/db');
 require('./src/config/passport');
 
-<<<<<<< HEAD
 require('./src/config/passport');
 
 const app = express();
@@ -15,14 +14,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-=======
-// Initialize passport Google strategy
-require('./src/config/passport');
-
-const app = express();
-
-// Middleware
->>>>>>> 330b07488d76f7ccb1896bfc107dd8eb5b5d4819
 app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
