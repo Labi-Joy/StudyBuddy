@@ -47,6 +47,54 @@ Study-Buddy is an **AI-powered WAEC preparation tool** that helps Nigerian secon
 
 ---
 
+#### 🏢 Potential employment for Study-Buddy as the project grows:
+
+- **Marketing Lead** – To handle social media promotion, digital campaigns, and school outreach.
+
+- **Customer Support Representative** – To assist students and parents with inquiries, feedback, and onboarding.
+
+- **AI Engineer** – To improve the chatbot’s intelligence, personalization, and accuracy.
+
+-**Education Content Specialist** – To curate high-quality learning materials, verify AI-generated content, and maintain academic standards.
+
+---
+
+
+#### 🎯 Target audience
+
+1. secondary schools: to integrate our app into their school learning system
+2. individuals preparing for waec
+
+---
+
+#### 💰 Revenue Stream:
+
+**Freemium Subscription Model**
+Free users access limited features, while premium users pay monthly for full AI tutoring, unlimited quizzes, and detailed progress reports. This creates a steady recurring income stream.
+
+**School Partnerships**
+Partner with secondary schools to provide Study-Buddy access for all students at a discounted bulk rate. Schools pay per student or per academic term.
+
+**Advertisements**
+Display targeted educational ads from universities, book publishers, and exam centers. This brings in additional revenue without disrupting the user experience.
+
+**Affiliate Marketing**
+Earn commissions from sales of WAEC forms, textbooks, and online courses promoted within the app. Encourages collaboration with other educational service providers.
+
+**Premium Parent & School Dashboards**
+Offer detailed analytics dashboards for parents and teachers to track student performance. Institutions pay monthly or yearly for access.
+
+**In-App Purchases**
+Sell digital learning materials, flashcards, or mock exams directly within the app. Students can buy one-time study resources without subscriptions.
+
+**Corporate Sponsorships**
+Partner with NGOs, EdTech brands, or telecoms to sponsor free access for low-income students. Sponsors get brand visibility while supporting education.
+
+**Data Licensing (Future Stage)**
+Aggregate anonymized performance data to provide insights for educational research or policy development. Generates value through ethical data partnerships.
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Frontend
@@ -149,7 +197,8 @@ A student should be able to:
 
 **Team 50 - Codefest Hackathon**
 - **Eden Joy** - Team Lead & Full Stack Developer
-- [Add other team members]
+- **Marcelina Idoko** - Backend Developer
+- **Yetunde Oyewole** - Frontend Developer
 
 ---
 
@@ -163,9 +212,7 @@ MIT License - See [LICENSE](LICENSE) for details
 
 Built with ❤️ for Nigerian Students
 
-- OpenAI for AI models
-- Google for Gemini AI & TTS
-- Cloudinary for file storage
+- CodeFest Nigeria
 
 ---
 
