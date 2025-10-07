@@ -93,7 +93,7 @@ export default function QuizTaking({ quiz, onBack }: QuizTakingProps) {
             <div className="mt-8 space-y-6">
               <div className="text-center text-sm text-gray-600">{quiz.title}</div>
               {reviewData.map((r, idx) => (
-                <div key={r.id} className="border rounded-lg p-4">
+                <div key={r.id} className="border bg-blue-400 rounded-lg p-4">
                   <div className="font-semibold mb-2">Q{idx + 1}. {r.question}</div>
                   <div className="space-y-2">
                     {r.options.map((opt, i) => {
